@@ -9,7 +9,7 @@ These sources currently include
 
 # Contribute
 Feel free to add more sources of sound track fit for programming.
-Submit i pull request and i would be more than happy to assist.
+Submit a pull request and I would be happy to merge.
 
 
 
