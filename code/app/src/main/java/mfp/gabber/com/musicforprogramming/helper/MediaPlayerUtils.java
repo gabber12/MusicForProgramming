@@ -1,7 +1,6 @@
 package mfp.gabber.com.musicforprogramming.helper;
 
 import android.app.Activity;
-import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -18,27 +17,26 @@ import mfp.gabber.com.musicforprogramming.pojos.Track;
  */
 public class MediaPlayerUtils {
     private static final String TAG = MediaPlayerUtils.class.getSimpleName();
+    public static MediaPlayerUtils instance;
     public MediaPlayer mediaPlayer;
     private Integer currentPlaying;
     private List<Track> tracks;
     private Activity mActivity;
-
-    public Boolean getPlaying() {
-        return isPlaying;
-    }
-
     private Boolean isPlaying;
-    public static MediaPlayerUtils instance;
 
     public static MediaPlayerUtils getInstance(Activity mActivity){
         if(instance == null) {
             instance = new MediaPlayerUtils();
             instance.mActivity = mActivity;
-            instance.mediaPlayer = new MediaPlayer();
+            instance.mediaPlayer = ((MainActivity) mActivity).getMediaPlayer();
             instance.mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             instance.isPlaying =false;
         }
         return instance;
+    }
+
+    public Boolean getPlaying() {
+        return isPlaying;
     }
 
     public Integer getCurrentPlaying() {
@@ -56,12 +54,12 @@ public class MediaPlayerUtils {
     }
     public void playSong(Integer i) {
         isPlaying = true;
-        if(getCurrentPlaying() == i) return;
+        if (i.equals(getCurrentPlaying())) return;
         setCurrentPlaying(i);
         mediaPlayer.reset();
         notifyPlaying();
         String url = tracks.get(i).getTrackUrl();
-        Uri myUri  = null;
+        Uri myUri;
         myUri = Uri.parse(url)
                 .buildUpon().build();
         try {

@@ -1,16 +1,15 @@
 package mfp.gabber.com.musicforprogramming.activities;
 
 import android.content.Context;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,23 +17,31 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.MediaController;
 import android.widget.TextView;
 
 import java.util.List;
 
 import mfp.gabber.com.musicforprogramming.R;
 import mfp.gabber.com.musicforprogramming.helper.MediaPlayerUtils;
-import mfp.gabber.com.musicforprogramming.helper.TrackListHelper;
 import mfp.gabber.com.musicforprogramming.helper.TrackStore;
 import mfp.gabber.com.musicforprogramming.pojos.Track;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MediaController.MediaPlayerControl, MediaPlayer.OnPreparedListener {
+    private static final String TAG = MainActivity.class.getSimpleName();
     private MediaPlayer mediaPlayer;
     private FloatingActionButton fab;
-    private  List<Track> tracks;
+    private List<Track> tracks;
     private TextView current_playing;
+    private MediaController mediaController;
+    private TracksAdapter adatper;
+    private Handler handler = new Handler();
+
+    public MediaPlayer getMediaPlayer() {
+        return mediaPlayer;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,16 +49,16 @@ public class MainActivity extends AppCompatActivity {
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
-        AppBarLayout mAppBarLayout =(AppBarLayout) findViewById(R.id.app_bar);
-        final CollapsingToolbarLayout mCollapsingToolbar = (CollapsingToolbarLayout)findViewById(R.id.toolbar_layout);
+        AppBarLayout mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
+        final CollapsingToolbarLayout mCollapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
                 String mCollapsedTitle = "Programming Music";
                 String mExpandedTitle = "";
-                if(mCollapsingToolbar.getHeight() + verticalOffset < 2 * ViewCompat.getMinimumHeight(mCollapsingToolbar)){
+                if (mCollapsingToolbar.getHeight() + verticalOffset < 2 * ViewCompat.getMinimumHeight(mCollapsingToolbar)) {
                     mCollapsingToolbar.setTitle(mCollapsedTitle);
-                }else {
+                } else {
                     mCollapsingToolbar.setTitle(mExpandedTitle);
                 }
 
@@ -60,13 +67,13 @@ public class MainActivity extends AppCompatActivity {
         mediaPlayer = new MediaPlayer();
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        TrackStore.getInstance().init();
-        tracks = TrackStore.getInstance().getTrackList();
+        TrackStore.getInstance(getApplicationContext()).init();
+        tracks = TrackStore.getInstance(getApplicationContext()).getTrackList();
         final ListView frame = (ListView) findViewById(R.id.tracks_frame);
         adatper = new TracksAdapter(tracks);
         frame.setAdapter(adatper);
 
-        current_playing = (TextView)findViewById(R.id.current_playing_track_name);
+        current_playing = (TextView) findViewById(R.id.current_playing_track_name);
         adatper.notifyDataSetChanged();
         frame.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -76,20 +83,21 @@ public class MainActivity extends AppCompatActivity {
                 MediaPlayerUtils.getInstance(MainActivity.this).playSong(position);
                 View old_view = adatper.getSelectedView();
                 adatper.setSelectedView(view);
-                if(old_view != null)
-                    ((TextView)old_view.findViewById(R.id.track_name)).setTextColor(getResources().getColor(android.R.color.white));
-                ((TextView)view.findViewById(R.id.track_name)).setTextColor(getResources().getColor(R.color.text_color_selected));
+                if (old_view != null)
+                    ((TextView) old_view.findViewById(R.id.track_name)).setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.white));
+                ((TextView) view.findViewById(R.id.track_name)).setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.text_color_selected));
                 setFab(true);
             }
         });
         MediaPlayerUtils.getInstance(this).setTracks(tracks);
-
+        mediaController = new MediaController(this);
+        mediaPlayer.setOnPreparedListener(this);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Boolean isPlaying = MediaPlayerUtils.getInstance(MainActivity.this).getPlaying();
                 setFab(isPlaying);
-                if(isPlaying)
+                if (isPlaying)
                     MediaPlayerUtils.getInstance(MainActivity.this).pauseCurrentSong();
                 else
                     MediaPlayerUtils.getInstance(MainActivity.this).playCurrentSong();
@@ -97,8 +105,7 @@ public class MainActivity extends AppCompatActivity {
         });
         current_playing.setText("--");
     }
-    private TracksAdapter adatper;
-    private static final String TAG = MainActivity.class.getSimpleName();
+
     public void setFab(Boolean isPlaying) {
         Log.i(TAG, "Play status " + isPlaying);
         if (!isPlaying) {
@@ -107,13 +114,97 @@ public class MainActivity extends AppCompatActivity {
             fab.setImageResource(R.drawable.ic_pause_white_36dp);
         }
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mediaController.hide();
+        mediaPlayer.stop();
+        mediaPlayer.release();
+    }
+
+    @Override
+    public void start() {
+        mediaPlayer.start();
+    }
+
+    @Override
+    public void pause() {
+        mediaPlayer.pause();
+    }
+
+    @Override
+    public int getDuration() {
+        return mediaPlayer.getDuration();
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        return mediaPlayer.getCurrentPosition();
+    }
+
+    @Override
+    public void seekTo(int pos) {
+        mediaPlayer.seekTo(pos);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return mediaPlayer.isPlaying();
+    }
+
+    @Override
+    public int getBufferPercentage() {
+        return 100;
+    }
+
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return 0;
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        Log.d(TAG, "onPrepared");
+        mediaController.setMediaPlayer(this);
+        mediaController.setAnchorView(findViewById(R.id.media_controls));
+        mediaController.setEnabled(true);
+
+        handler.post(new Runnable() {
+            public void run() {
+                mediaController.setEnabled(true);
+                mediaController.show();
+            }
+        });
+    }
+
     public static class viewHolder {
         TextView tName;
         TextView sno;
     }
-    public class TracksAdapter extends BaseAdapter{
+
+    public class TracksAdapter extends BaseAdapter {
         private List<Track> tracks;
         private View selectedView;
+
+        public TracksAdapter(List<Track> tracks) {
+            this.tracks = tracks;
+        }
 
         public View getSelectedView() {
             return selectedView;
@@ -123,12 +214,9 @@ public class MainActivity extends AppCompatActivity {
             this.selectedView = selectedView;
         }
 
-        public TracksAdapter(List<Track> tracks) {
-            this.tracks = tracks;
-        }
         @Override
         public int getCount() {
-            if(tracks == null) return 0;
+            if (tracks == null) return 0;
             return tracks.size();
         }
 
@@ -154,11 +242,11 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 viewHolder = (viewHolder) convertView.getTag();
             }
-            Track track = (Track)getItem(position);
-            viewHolder.tName = (TextView)convertView.findViewById(R.id.track_name);
-            viewHolder.sno = (TextView)convertView.findViewById(R.id.sno);
+            Track track = (Track) getItem(position);
+            viewHolder.tName = (TextView) convertView.findViewById(R.id.track_name);
+            viewHolder.sno = (TextView) convertView.findViewById(R.id.sno);
             viewHolder.tName.setText(track.getTrackName());
-            viewHolder.sno.setText((position+1)+"");
+            viewHolder.sno.setText((position + 1) + "");
             return convertView;
         }
     }

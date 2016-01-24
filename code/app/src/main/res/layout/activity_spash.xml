@@ -1,0 +1,46 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:background="@color/colorPrimary"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingTop="200dp">
+
+    <ImageView
+        android:id="@+id/fullscreen_content"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:keepScreenOn="true"
+        android:src="@drawable/app_icon" />
+
+    <!-- This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows. -->
+    <com.github.rahatarmanahmed.cpv.CircularProgressView
+        android:id="@+id/progress_view"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        app:cpv_animAutostart="true"
+        app:cpv_color="#FFF"
+        app:cpv_indeterminate="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/progress_view"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:text="@string/setting_up"
+
+        android:textColor="#FFF"
+        android:textSize="20sp" />
+
+
+</RelativeLayout>
+

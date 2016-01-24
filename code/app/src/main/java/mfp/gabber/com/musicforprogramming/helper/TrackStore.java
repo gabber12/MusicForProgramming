@@ -1,5 +1,12 @@
 package mfp.gabber.com.musicforprogramming.helper;
 
+import android.content.Context;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,21 +18,28 @@ import mfp.gabber.com.musicforprogramming.pojos.Track;
 public class TrackStore {
     private static TrackStore instance;
     private List<Track> tracks;
+    private Context context;
 
-    public static TrackStore getInstance() {
+    public static TrackStore getInstance(Context context) {
         if (instance == null) {
             instance = new TrackStore();
-            instance.tracks = new ArrayList<Track>();
+            instance.context = context;
+            instance.tracks = new ArrayList<>();
         }
         return instance;
     }
 
     public void init() {
-        for (int i = 0; i < 15; i++) {
-            Track track = new Track();
-            track.setTrackName(i+" Michael Hicks");
-            track.setTrackUrl("http://datashat.net/music_for_programming_27-michael_hicks.mp3");
-            tracks.add(track);
+
+        try {
+            String json = Utils.jsonToStringFromAssetFolder("mfp.json", context);
+            Type listType = new TypeToken<ArrayList<Track>>() {
+            }.getType();
+            List<Track> tracksList = new Gson().fromJson(json, listType);
+            tracksList.size();
+            tracks.addAll(tracksList);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

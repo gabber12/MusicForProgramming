@@ -1,7 +1,6 @@
 package mfp.gabber.com.musicforprogramming.helper;
 
 import android.app.Activity;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -16,8 +15,9 @@ import mfp.gabber.com.musicforprogramming.pojos.Track;
  * Created by gabber12 on 23/01/16.
  */
 public class TrackListHelper {
-    private Activity mActivity;
     private static TrackListHelper instance;
+    private Activity mActivity;
+
     public static TrackListHelper getInstance(Activity mActivity){
         if(instance == null) {
             instance = new TrackListHelper();

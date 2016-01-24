@@ -24,18 +24,20 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <RelativeLayout
+                android:id="@+id/header_view_frame"
                 android:layout_width="match_parent"
                 android:layout_height="155dp"
+                android:minHeight="155dp"
                 app:layout_collapseMode="parallax">
                 <TextView
+                    android:id="@+id/playing_label"
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
+                    android:layout_alignParentTop="true"
+                    android:gravity="center"
                     android:text="@string/now_playing"
                     android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:layout_alignParentTop="true"
-                    android:id="@+id/playing_label"
-                    android:gravity="center"/>
+                    android:textStyle="bold" />
                 <TextView
                     android:id="@+id/current_playing_track_name"
                     android:layout_width="match_parent"
@@ -43,6 +45,37 @@
                     android:layout_below="@id/playing_label"
                     android:gravity="center"
                     android:textSize="20sp"/>
+
+                <LinearLayout
+                    android:id="@+id/media_controls"
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:layout_below="@id/current_playing_track_name"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/prev_button"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/ic_skip_previous_white_36dp" />
+
+                    <ImageButton
+                        android:id="@+id/stop_button"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginLeft="5dp"
+                        android:src="@drawable/ic_stop_white_36dp" />
+
+                    <ImageButton
+                        android:id="@+id/next_button"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="5dp"
+                        android:src="@drawable/ic_skip_next_white_36dp" />
+
+                </LinearLayout>
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="2dp"
